@@ -6,14 +6,14 @@ from asyncpg import create_pool
 
 from sanic import Sanic
 
-from environment import Environment
+from jie.environment import Environment
 
 app = Sanic(__name__)
 
 
 @app.listener('before_server_start')
 async def register_db(app, loop):
-    env = getattr(app, 'env')
+    env = getattr(app, 'env', None)
     if not env:
         env = Environment(app, loop)
         app.env = env
