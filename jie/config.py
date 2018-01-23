@@ -7,6 +7,12 @@ DB_CONFIG = {
 }
 
 SERVER_CONFIG = {
-    'port': 54321,
+    'port': 8080,
     'host': '0.0.0.0',
+}
+
+REGISTRY_SERVICE_CONFIG = {
+    'port': 8081,
+    'host': '0.0.0.0',
+    'uri': '/_services',
 }

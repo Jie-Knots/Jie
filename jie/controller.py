@@ -2,6 +2,7 @@ import types
 from functools import wraps
 from inspect import isawaitable
 
+from sanic.blueprints import Blueprint
 from sanic.views import HTTPMethodView
 from sanic.request import Request
 

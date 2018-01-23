@@ -58,6 +58,7 @@ class Server:
         self.port = port
 
     def add_listener(self):
+        self.listen_register_env()
         for item in self.listener._fields:
             if item and hasattr(self, 'listen_{item}'.format(item=item)):
                 getattr(self, 'listen_{item}'.format(item=item))()
@@ -75,6 +76,12 @@ class Server:
             self.app.env = env
         return env
 
+    def listen_register_env(self):
+        """"""
+        @self.app.listener('before_server_start')
+        async def register_env(app, loop):
+            self.get_env(loop)
+
     def listen_register_db(self):
         """"""
         @self.app.listener('before_server_start')
@@ -88,7 +95,7 @@ class Server:
             env.db_pool = db_pool
 
     def listen_register_service(self):
-        """"""
+        """Register and unregister the service"""
         @self.app.listener('after_server_start')
         async def register_service(app, loop):
             env = self.get_env(loop)
@@ -96,10 +103,19 @@ class Server:
                 return
             host = app.config.REGISTRY_SERVICE_CONFIG.get('host', '0.0.0.0')
             port = app.config.REGISTRY_SERVICE_CONFIG.get('port', 8081)
-            registry = ServiceRegistry(app, loop, host, port)
+            uri = app.config.REGISTRY_SERVICE_CONFIG.get('uri', '/_services')
+            registry = ServiceRegistry(app, loop, uri, host, port)
             env.registry = registry
-            await registry.registry_service(env)
-    
+            await registry.register_service(env)
+        
+        @self.app.listener('before_server_stop')
+        async def unregister_service(app, loop):
+            env = self.get_env(loop)
+            if 'REGISTRY_SERVICE_CONFIG' not in app.config:
+                return
+            registry = env.registry
+            await registry.unregister_service(env)
+
 
 if __name__ == '__main__':
     server = Server('jie')
